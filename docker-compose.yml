@@ -1,0 +1,30 @@
+version: "3.4"
+
+services:
+    app:
+        build: .
+        ports:
+            - 3000:80
+        user: fabdeljaoued
+        volumes:
+            - ./:/var/www/html
+        tty: true
+        stdin_open: true
+        depends_on:
+            db:
+                condition: service_healthy
+    db:
+        image: mysql:8.0
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        volumes:
+            - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            interval: 10s
+            retries: 20
+    adminer:
+        image: adminer
+        ports:
+            - 5000:8080
